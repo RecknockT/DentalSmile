@@ -58,22 +58,25 @@ export const uploadFileToStorage = async (bucket, path, file, onProgress) => {
   return urlData?.publicUrl || null;
 };
 
+const isStorageRlsError = (err) => {
+  const message = err?.message || String(err);
+  return /row-level security|violates row-level security policy/i.test(message);
+};
+
 export const uploadOdontogram = async (file, patientId, onProgress) => {
   const ext = (file.name && file.name.split('.').pop()) || 'jpg';
   const path = `patients/${patientId}/patient-${patientId}-${Date.now()}.${ext}`;
   try {
     return await uploadFileToStorage(IMAGES_BUCKET, path, file, onProgress);
   } catch (err) {
-    const message = err?.message || String(err);
-    if (message.includes('row-level security') || message.includes('violates row-level security policy')) {
+    if (isStorageRlsError(err)) {
       throw new Error('Storage upload falló por RLS. Revisa la política del bucket Imagenes en Supabase para permitir la carga desde el cliente.');
     }
 
     try {
       return await uploadWithClientFallback(file, path);
     } catch (err2) {
-      const message2 = err2?.message || String(err2);
-      if (message2.includes('row-level security') || message2.includes('violates row-level security policy')) {
+      if (isStorageRlsError(err2)) {
         throw new Error('Storage upload falló por RLS. Revisa la política del bucket Imagenes en Supabase para permitir la carga desde el cliente.');
       }
       throw err2 || err;

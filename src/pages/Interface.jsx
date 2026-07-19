@@ -62,6 +62,16 @@ const syncWithSupabase = async (table, rows) => {
   }
 };
 
+const updatePatientOdontogramInSupabase = async (patientId, odontogram) => {
+  try {
+    const { error } = await supabase.from('patients').update({ odontogram }).eq('id', patientId);
+    if (error) throw error;
+  } catch (error) {
+    console.error('No se pudo actualizar odontograma en Supabase:', error);
+    throw error;
+  }
+};
+
 const insertPatientInSupabase = async (patient) => {
   const { error } = await supabase.from('patients').insert([patient]);
   if (error) throw error;
@@ -260,6 +270,30 @@ function Interface() {
       setFeedback(`No se pudo subir a Storage. Error: ${msg}`);
     } finally {
       setUploadProgress(0);
+    }
+  };
+
+  const deleteSelectedImage = async (imgUrl) => {
+    if (!selectedPatient || !selectedPatient.id) return;
+    const images = (selectedPatient.odontogram && Array.isArray(selectedPatient.odontogram.images))
+      ? selectedPatient.odontogram.images.filter((img) => img !== imgUrl)
+      : [];
+    const updated = {
+      ...selectedPatient,
+      odontogram: {
+        ...(selectedPatient.odontogram || {}),
+        images,
+        image_url: selectedPatient.odontogram?.image_url === imgUrl ? images[images.length - 1] : selectedPatient.odontogram?.image_url
+      }
+    };
+    setModalImage(null);
+    try {
+      await updatePatient(updated);
+      await updatePatientOdontogramInSupabase(selectedPatient.id, updated.odontogram);
+      setFeedback('Imagen eliminada en Supabase y en la ficha local.');
+    } catch (err) {
+      console.error('Error borrando imagen en Supabase:', err);
+      setFeedback('La imagen se eliminó localmente, pero hubo un error al sincronizar con Supabase.');
     }
   };
 
@@ -775,25 +809,17 @@ function Interface() {
                                 </div>
                               ) : null}
                               <div className="odontogram-placeholder">
-                                {selectedPatient.odontogram?.image_url ? (
-                                  <img src={selectedPatient.odontogram.image_url} alt="Imagen" style={{ maxWidth: '100%', borderRadius: 6 }} />
-                                ) : (
-                                  <div>No hay imagen cargada</div>
-                                )}
                                 <div style={{ marginTop: 10 }}>
                                   <h5>Galería</h5>
                                   <ImageGallery images={(selectedPatient.odontogram && selectedPatient.odontogram.images) || []} onSelect={(img) => setModalImage(img)} />
-                                  {modalImage ? <ImageModal src={modalImage} alt="Imagen seleccionada" onClose={() => setModalImage(null)} /> : null}
-                                  <div style={{ marginTop: 8 }}>
-                                    <button className="ghost-btn" type="button" onClick={() => {
-                                      // remove last image from gallery
-                                      const imgs = (selectedPatient.odontogram && selectedPatient.odontogram.images) || [];
-                                      if (imgs.length === 0) return setFeedback('No hay imágenes para borrar');
-                                      const newImgs = imgs.slice(0, imgs.length - 1);
-                                      const updated = { ...selectedPatient, odontogram: { ...(selectedPatient.odontogram || {}), images: newImgs, image_url: newImgs[newImgs.length-1] || undefined } };
-                                      updatePatient(updated);
-                                    }}>Borrar última imagen</button>
-                                  </div>
+                                  {modalImage ? (
+                                    <ImageModal
+                                      src={modalImage}
+                                      alt="Imagen seleccionada"
+                                      onClose={() => setModalImage(null)}
+                                      onDelete={() => deleteSelectedImage(modalImage)}
+                                    />
+                                  ) : null}
                                 </div>
                               </div>
                             </div>

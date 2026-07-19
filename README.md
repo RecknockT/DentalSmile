@@ -1,16 +1,49 @@
-# React + Vite
+# DentalSmile
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web para gestión de clínica dental, construida con React, Vite y Supabase.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **React 19** + **React Router** para la interfaz y navegación
+- **Vite** como bundler y servidor de desarrollo
+- **Supabase** como backend (base de datos, autenticación, storage)
 
-## React Compiler
+## Requisitos previos
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js 20.19+ o 22.12+
+- Una cuenta y proyecto de [Supabase](https://supabase.com)
 
-## Expanding the ESLint configuration
+## Configuración
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Instalá las dependencias:
+   ```bash
+   npm install
+   ```
+
+2. Creá un archivo `.env` en la raíz del proyecto con tus credenciales de Supabase (este archivo está excluido del repositorio, nunca lo subas a git):
+   ```
+   VITE_SUPABASE_URL=tu_url_de_supabase
+   VITE_SUPABASE_ANON_KEY=tu_anon_key
+   ```
+
+3. Iniciá el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
+
+## Scripts disponibles
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Inicia el servidor de desarrollo |
+| `npm run build` | Genera el build de producción |
+| `npm run preview` | Previsualiza el build de producción |
+| `npm run lint` | Corre ESLint sobre el proyecto |
+
+## Estructura del proyecto
+
+```
+├── public/       # Archivos estáticos
+├── src/          # Código fuente de la aplicación
+├── supabase/     # Configuración/migraciones de Supabase
+```
