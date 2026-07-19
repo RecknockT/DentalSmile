@@ -1,5 +1,5 @@
 import React from 'react';
-
+//checho rubio
 export default function ImageModal({ src, alt, onClose, onDelete }) {
   if (!src) return null;
   return (
